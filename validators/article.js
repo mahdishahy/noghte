@@ -34,51 +34,6 @@ const schema = {
             string: "آدرس عکس باید یک رشته باشد"
         }
     },
-    owner: {
-        type: "string",
-        custom: (value, errors) => {
-            if (!ObjectID.isValid(value)) {
-                errors.push({ type: "objectID", expected: "a valid objectID", actual: value });
-            }
-            return value;
-        },
-        messages: {
-            required: "صاحب مقاله الزامی است",
-            objectID: "شناسه صاحب مقاله الزامی است"
-        }
-    },
-    collaborators: {
-        type: "array",
-        optional: true,
-        items: {
-            type: "string",
-            custom: (value, errors) => {
-                if (!ObjectID.isValid(value)) {
-                    errors.push({ type: "objectID", expected: "a valid objectID", actual: value });
-                }
-                return value;
-            },
-            message: {
-                objectID: "شناسه همکار معتبر نیست"
-            }
-        }
-    },
-    tags: {
-        type: "array",
-        optional: true,
-        items: {
-            type: "string",
-            custom: (value, errors) => {
-                if (!ObjectID.isValid(value)) {
-                    errors.push({ type: "objectID", expected: "a valid objectID", actual: value });
-                }
-                return value;
-            },
-            messages: {
-                objectID: "شناسه تگ معتبر نیست"
-            }
-        }
-    },
     status: {
         type: "string",
         enum: ["DRAFT", "PUBLISHED", "PENDING"],
