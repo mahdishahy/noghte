@@ -7,6 +7,7 @@ const schema = {
         type: 'string',
         min: 3,
         trim: true,
+        required: true,
         messages: {
             required: 'نام و نام خانوادگی الزامی است',
             stringMin: 'نام کامل حداقل باید 3 کاراکتر باشد'
@@ -16,6 +17,9 @@ const schema = {
         type: 'string',
         trim: true,
         pattern: /^[a-zA-Z0-9_]+$/,
+        min: 5,
+        max: 15,
+        required: true,
         messages: {
             required: 'نام کاربری الزامی است',
             stringMin: 'نام کاربری حداقل باید 5 کاراکتر باشد',
@@ -26,6 +30,7 @@ const schema = {
     email: {
         type: 'email',
         normalize: true,
+        required: true,
         messages: {
             required: "ایمیل الزامی است",
             email: "ایمیل نامعتبر است."
@@ -38,6 +43,7 @@ const schema = {
     password: {
         type: 'string',
         min: 8,
+        required: true,
         messages: {
             required: "رمز عبور الزامی است",
             stringMin: "رمز عبور حداقل باید 8 کاراکتر باشد"
@@ -46,6 +52,7 @@ const schema = {
     confirm_password: {
         type: "equal",
         field: "password",
+        required: true,
         messages: {
             equalField: 'رمز عبور مطابقت ندارد'
         }
