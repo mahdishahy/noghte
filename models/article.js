@@ -1,5 +1,6 @@
 const { Schema, default: mongoose } = require("mongoose");
-const slugify = require("slugify")
+const slugify = require("slugify");
+const { generateSlug } = require("../middlewares/article");
 
 const schema = new Schema({
     title: {
@@ -49,10 +50,7 @@ const schema = new Schema({
     },
 }, { timestamps: true });
 
-schema.pre("save", function (next) {
-    this.slug = slugify(this.title, { lower: true, replacement: "-" })
-    next();
-});
+schema.pre("save", generateSlug);
 
 const model = mongoose.model("Article", schema);
 
