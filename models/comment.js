@@ -10,6 +10,11 @@ const schema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    article: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Article',
+        required: true
+    },
     mainCommentId: {
         type: mongoose.Types.ObjectId,
         ref: 'Comment',
