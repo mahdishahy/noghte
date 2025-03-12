@@ -1,8 +1,8 @@
-const { Schema, default: mongoose } = require("mongoose");
+const mongoose = require('mongoose')
 const slugify = require("slugify");
 const { generateSlug } = require("../middlewares/article");
 
-const schema = new Schema({
+const schema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
@@ -25,20 +25,20 @@ const schema = new Schema({
         default: null
     },
     owner: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: "User",
         required: true
     },
     collaborators: [
         {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Types.ObjectId,
             ref: "User"
         }
     ],
     tags:
         [
             {
-                type: Schema.Types.ObjectId,
+                type: mongoose.Types.ObjectId,
                 ref: "Tag",
                 default: null
             }
