@@ -52,6 +52,12 @@ const schema = new mongoose.Schema({
 
 schema.pre("save", generateSlug);
 
+schema.virtual('comments', {
+    ref: 'Comment',
+    foreignField: 'article',
+    localField: '_id',
+})
+
 const model = mongoose.model("Article", schema);
 
 module.exports = model;
