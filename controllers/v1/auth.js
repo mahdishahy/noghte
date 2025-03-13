@@ -16,11 +16,20 @@ exports.register = async (req, res) => {
         // receive data from request body
         const { full_name, username, email, phone_number, password } = req.body;
 
-        // checking if the user is registered
-        const isUserExist = await userModel.findOne({
+        const user = await userModel.findOne({
             $or: [{ username }, { email }, { phone_number }],
         });
-        if ( isUserExist ) {
+
+        // check user suspension
+        if ( user.is_suspended ) {
+            return res.status(403).json({
+                message: 'حساب شما تعلیق شده است',
+                reason: `علت تعلیق: ${ user.suspension_reason }`
+            })
+        }
+
+        // checking if the user is registered
+        if ( user ) {
             return res.status(409).json({
                 message:
                     "کاربری با این ایمیل، شماره تلفن یا نام کاربری از قبل وجود داره",
@@ -34,7 +43,7 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // new user
-        const user = await userModel.create({
+        const newUser = await userModel.create({
             full_name,
             username,
             email,
@@ -44,12 +53,12 @@ exports.register = async (req, res) => {
         });
 
         // convert user into object
-        const userObject = user.toObject();
+        const userObject = newUser.toObject();
         // delete password field
         Reflect.deleteProperty(userObject, "password");
 
         // generate access token
-        const accessToken = generateAccessToken(user.Id)
+        const accessToken = generateAccessToken(newUser.Id)
 
         return res.status(201).json({ user: userObject, accessToken });
     } catch ( error ) {
@@ -92,7 +101,7 @@ exports.login = async (req, res) => {
 
         return res.status(201).json({ user: userObject, accessToken });
     } catch ( error ) {
-        return res.status(500).json({ message: "خطای سرور", error });
+        return res.status(500).json({ message: "خطای سرور" });
     }
 };
 
