@@ -1,5 +1,5 @@
 const userModel = require('./../../models/user')
-const mongoose = require('mongoose')
+const isValidId = require('./../../utils/isValidID')
 
 exports.suspend = async (req, res) => {
     try {
@@ -7,8 +7,7 @@ exports.suspend = async (req, res) => {
         const { reason } = req.body
 
         // id validation
-        const isValidId = mongoose.Types.ObjectId.isValid(id)
-        if ( !isValidId ) {
+        if ( !isValidId(id) ) {
             return res.status(409).json({ message: 'شناسه کاربر نامعتبر است' })
         }
 
@@ -32,7 +31,7 @@ exports.suspend = async (req, res) => {
             is_suspended: true,
             suspension_reason: reason
         })
-        return res.status(201).json({ messgae: 'کاربر تعلیق شد' })
+        return res.status(201).json({ message: 'کاربر تعلیق شد' })
     } catch ( error ) {
         return res.status(500).json({ message: "خطا در سرور" })
     }
