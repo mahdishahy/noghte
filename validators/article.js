@@ -1,6 +1,6 @@
-const Validateor = require("fastest-validator");
-const { ObjectID } = require("mongodb");
-const v = new Validateor();
+const Validator = require("fastest-validator");
+
+const v = new Validator();
 
 const schema = {
     title: {
