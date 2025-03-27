@@ -14,6 +14,6 @@ module.exports = async (req, res, next) => {
         req.user = user
         next()
     } catch ( error ) {
-        return res.status(500).json({ message: 'خطا در سرور'})
+        return res.status(500).json({ message: 'خطا در سرور' })
     }
 }
