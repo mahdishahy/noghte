@@ -12,7 +12,7 @@ router.route('/suspend/:id').put(authMiddleware, isAdminMiddleware, banControlle
 router.get('/', authMiddleware, isAdminMiddleware, userController.getAll)
 router.get('/:id', authMiddleware, isAdminMiddleware, userController.getById)
 router.delete('/:id', authMiddleware, isAdminMiddleware, userController.remove)
-router.put('/:id', authMiddleware, isAdminMiddleware, userController.update)
+router.put('/:id', authMiddleware, userController.update)
 router.post('/change-role/:id', authMiddleware, isAdminMiddleware, userController.changeRole)
 
 module.exports = router
