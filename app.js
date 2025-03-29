@@ -4,6 +4,7 @@ const cors = require('cors')
 const authRouter = require('./routes/v1/auth')
 const usersRouter = require('./routes/v1/user')
 const articlesRouter = require('./routes/v1/article')
+const commentsRouter = require('./routes/v1/comment')
 
 const app = express()
 app.use(express.json())
@@ -18,5 +19,6 @@ app.get('/', (req, res) => {
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/articles', articlesRouter)
+app.use('/api/v1/comments', commentsRouter)
 
 module.exports = app

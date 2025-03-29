@@ -1,6 +1,8 @@
 const articleModel = require('./../../models/article')
 const tagModel = require('./../../models/tag')
+const commentModel = require('./../../models/comment')
 const validator = require('./../../validators/article')
+const { populate } = require("dotenv");
 
 exports.create = async (req, res) => {
     try {
@@ -41,4 +43,39 @@ exports.create = async (req, res) => {
         return res.status(500).json({ message: 'خطا در سرور' })
     }
 
+}
+
+exports.getAll = async (req, res) => {
+    try {
+        const articles = await articleModel.find({})
+            .populate('tags', 'title')
+            .populate('owner', 'username -_id')
+            .select('-__v')
+            .lean()
+            .sort({ createdAt: -1 })
+
+        // get articles comments
+        const comments = await commentModel.find({})
+            .populate('user', 'full_name -_id')
+            .lean()
+            .select('-__v')
+
+        const allArticles = []
+
+        articles.forEach((article) => {
+            const articleComments = comments.filter((comment) => {
+                return comment.article.toString() === article._id.toString()
+            })
+
+            allArticles.push({
+                ...article,
+                comments: articleComments
+            })
+        })
+
+        return res.status(200).json(allArticles)
+        // return res.status(200).json({ articles })
+    } catch ( error ) {
+        return res.status(500).json({ message: 'خطا در سرور' })
+    }
 }
