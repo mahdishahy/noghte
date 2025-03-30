@@ -8,5 +8,6 @@ const router = express.Router()
 router.route('/').post(authMiddleware, controller.create).get(controller.getAll)
 router.route('/:identifier').get(controller.findOne)
 router.route('/edit/:id').put(authMiddleware, controller.edit)
+router.route('/delete/:id').delete(authMiddleware, controller.remove)
 
 module.exports = router
