@@ -92,7 +92,7 @@ exports.login = async (req, res) => {
         const userObject = passwordUtils.removeOnePropertyInObject(user, 'password');
 
         // generate access token
-        const accessToken = generateAccessToken(user.Id)
+        const accessToken = generateAccessToken(user._id)
 
         return res.status(201).json({ user: userObject, accessToken });
     } catch ( error ) {
