@@ -11,6 +11,9 @@ module.exports = async (req, res, next) => {
     try {
         const payloadData = jwt.verify(token, process.env.JWT_SECRET)
         const user = await userModel.findById(payloadData.id).lean()
+        if ( !user ) {
+            return res.status(404).json({ message: "ابتدا وارد شوید ." })
+        }
         req.user = user
         next()
     } catch ( error ) {

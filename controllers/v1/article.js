@@ -2,9 +2,9 @@ const articleModel = require('./../../models/article')
 const tagModel = require('./../../models/tag')
 const commentModel = require('./../../models/comment')
 const validator = require('./../../validators/article')
-const { generateSlug } = require("./../../middlewares/article");
 const isValidId = require('./../../utils/isValidID')
 const { populate } = require("dotenv");
+const { generateManualSlug } = require("../../utils/slug");
 
 exports.create = async (req, res) => {
     try {
@@ -106,7 +106,6 @@ exports.findOne = async (req, res) => {
 }
 
 
-
 // *********************************************************
 exports.edit = async (req, res) => {
     try {
@@ -127,8 +126,8 @@ exports.edit = async (req, res) => {
             return res.status(403).json({ message: 'شما اجازه ویرایش مقاله را ندارید' })
         }
 
-        if (title && title !== article.title) {
-            req.body.slug = await generateSlug(title.toString());
+        if ( title && title !== article.title ) {
+            req.body.slug = generateManualSlug(title)
         }
 
         let tagIds = [];
