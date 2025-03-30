@@ -2,6 +2,8 @@ const articleModel = require('./../../models/article')
 const tagModel = require('./../../models/tag')
 const commentModel = require('./../../models/comment')
 const validator = require('./../../validators/article')
+const { generateSlug } = require("./../../middlewares/article");
+const isValidId = require('./../../utils/isValidID')
 const { populate } = require("dotenv");
 
 exports.create = async (req, res) => {
@@ -99,6 +101,58 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json({ ...article, comments })
     } catch ( error ) {
+        return res.status(500).json({ message: 'خطا در سرور' })
+    }
+}
+
+
+
+// *********************************************************
+exports.edit = async (req, res) => {
+    try {
+        const { id } = req.params
+        if ( !isValidId(id) ) {
+            return res.status(400).json({ message: 'شناسه مقاله نامعتبر است' })
+        }
+
+        let { title, content, image_url, tags } = req.body
+        const userId = req.user._id
+
+        const article = await articleModel.findById(id)
+        if ( !article ) {
+            return res.status(404).json({ message: 'مقاله مورد نظر یافت نشد' })
+        }
+
+        if ( article.owner.toString() !== userId.toString() ) {
+            return res.status(403).json({ message: 'شما اجازه ویرایش مقاله را ندارید' })
+        }
+
+        if (title && title !== article.title) {
+            req.body.slug = await generateSlug(title.toString());
+        }
+
+        let tagIds = [];
+        if ( !tags ) {
+            tags = article.tags
+        }
+
+        for ( const tagName of tags ) {
+            let tag = await tagModel.findOne({ title: tagName });
+            if ( !tag ) {
+                tag = await tagModel.create({ title: tagName });
+            }
+            tagIds.push(tag._id);
+        }
+
+
+        const updatedArticle = await articleModel.findByIdAndUpdate({ _id: id },
+            {
+                title, content, image_url, tags: tagIds
+            }, { new: true })
+
+        return res.status(200).json({ message: 'مقاله ویرایش شد' })
+    } catch ( error ) {
+        console.log(error.message)
         return res.status(500).json({ message: 'خطا در سرور' })
     }
 }
