@@ -29,11 +29,7 @@ exports.create = async (req, res) => {
 
         // create new article
         const article = articleModel.create({
-            title,
-            content,
-            image_url,
-            owner,
-            tags: tagIDs
+            title, content, image_url, owner, tags: tagIDs
         })
         return res.status(201).json({
             message: 'مقاله با موفقیت ساخته شد و در دست بررسی است، پس از تایید در وبسایت منتظر خواهد شد'
@@ -68,13 +64,40 @@ exports.getAll = async (req, res) => {
             })
 
             allArticles.push({
-                ...article,
-                comments: articleComments
+                ...article, comments: articleComments
             })
         })
 
         return res.status(200).json(allArticles)
         // return res.status(200).json({ articles })
+    } catch ( error ) {
+        return res.status(500).json({ message: 'خطا در سرور' })
+    }
+}
+
+exports.findOne = async (req, res) => {
+    try {
+        const { identifier } = req.params
+
+        // identifier validation
+        if ( identifier == '' || identifier === null ) {
+            return res.status(409).json({ message: 'شناسه مقاله دریافت نشد' })
+        }
+
+        // get article
+        const article = await articleModel.findOne({ $or: [{ id: identifier }, { slug: identifier }] })
+            .populate('tags', 'title')
+            .populate('owner', 'full_name')
+            .select('-__v')
+            .lean()
+
+        // get comments
+        const comments = await commentModel.find({ article: article._id, status: 'approved' })
+            .populate('user', 'full_name -_id -article')
+            .select('-__v')
+            .lean()
+
+        res.status(200).json({ ...article, comments })
     } catch ( error ) {
         return res.status(500).json({ message: 'خطا در سرور' })
     }
