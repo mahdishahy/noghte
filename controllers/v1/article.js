@@ -105,8 +105,6 @@ exports.findOne = async (req, res) => {
     }
 }
 
-
-// *********************************************************
 exports.edit = async (req, res) => {
     try {
         const { id } = req.params
@@ -143,7 +141,6 @@ exports.edit = async (req, res) => {
             tagIds.push(tag._id);
         }
 
-
         const updatedArticle = await articleModel.findByIdAndUpdate({ _id: id },
             {
                 title, content, image_url, tags: tagIds
@@ -155,17 +152,19 @@ exports.edit = async (req, res) => {
         return res.status(500).json({ message: 'خطا در سرور' })
     }
 }
+
 exports.remove = async (req, res) => {
     const { id } = req.params;
     try {
-
         if ( !isValidId(id) ) {
             return res.status(400).json({ message: 'شناسه مقاله نامعتبر است' })
         }
+
         const article = await articleModel.findOneAndDelete({ _id: id });
         if ( !article ) {
             return res.status(404).json({ message: 'همچین مقاله ای وجود نداره' });
         }
+
         return res.status(200).json({ message: 'مقاله با موفقیت حذف شد .' })
     } catch ( e ) {
         return res.status(500).json({ message: 'خطا در سرور' })
