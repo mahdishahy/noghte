@@ -28,6 +28,10 @@ const schema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    category: {
+        type: mongoose.Types.ObjectId,
+        ref: "Category",
+    },
     collaborators: [
         {
             type: mongoose.Types.ObjectId,

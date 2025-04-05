@@ -17,7 +17,15 @@ exports.create = async (req, res) => {
         }
 
         //  attention: Article tags must be received as an array
-        const { title, content, image_url, tags } = req.body;
+        const { title, content, image_url, tags, category } = req.body;
+
+        // validate category _id
+        if ( !isValidId(category) ) {
+            return res
+                .status(422)
+                .json({ message: "دسته بندی نامعتبر است ." });
+        }
+
         const owner = req.user._id
         const tagIDs = []
 
@@ -31,7 +39,7 @@ exports.create = async (req, res) => {
 
         // create new article
         const article = articleModel.create({
-            title, content, image_url, owner, tags: tagIDs
+            title, content, image_url, owner, tags: tagIDs, category
         })
         return res.status(201).json({
             message: 'مقاله با موفقیت ساخته شد و در دست بررسی است، پس از تایید در وبسایت منتظر خواهد شد'
@@ -48,6 +56,7 @@ exports.getAll = async (req, res) => {
         const articles = await articleModel.find({})
             .populate('tags', 'title')
             .populate('owner', 'username -_id')
+            .populate('category', 'title')
             .select('-__v')
             .lean()
             .sort({ createdAt: -1 })
@@ -87,9 +96,10 @@ exports.findOne = async (req, res) => {
         }
 
         // get article
-        const article = await articleModel.findOne({ $or: [{ id: identifier }, { slug: identifier }] })
+        const article = await articleModel.findOne({ $or: [{ _id: identifier }, { slug: identifier }] })
             .populate('tags', 'title')
             .populate('owner', 'full_name')
+            .populate('category', 'title')
             .select('-__v')
             .lean()
 
@@ -112,7 +122,7 @@ exports.edit = async (req, res) => {
             return res.status(400).json({ message: 'شناسه مقاله نامعتبر است' })
         }
 
-        let { title, content, image_url, tags } = req.body
+        let { title, content, image_url, tags, category } = req.body
         const userId = req.user._id
 
         const article = await articleModel.findById(id)
@@ -122,6 +132,12 @@ exports.edit = async (req, res) => {
 
         if ( article.owner.toString() !== userId.toString() ) {
             return res.status(403).json({ message: 'شما اجازه ویرایش مقاله را ندارید' })
+        }
+        // validate category _id
+        if ( category && !isValidId(category) ) {
+            return res
+                .status(422)
+                .json({ message: "دسته بندی نامعتبر است ." });
         }
 
         if ( title && title !== article.title ) {
@@ -143,7 +159,7 @@ exports.edit = async (req, res) => {
 
         const updatedArticle = await articleModel.findByIdAndUpdate({ _id: id },
             {
-                title, content, image_url, tags: tagIds
+                title, content, image_url, tags: tagIds, category
             }, { new: true })
 
         return res.status(200).json({ message: 'مقاله ویرایش شد' })
