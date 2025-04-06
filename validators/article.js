@@ -41,6 +41,12 @@ const schema = {
         messages: {
             enum: "وضعیت مجاز نیست . مقادیر مجاز : DRAFT, PUBLISHED, PENDING"
         }
+    },
+    category: {
+        type: "string",
+        messages: {
+            required: "دسته بندی برای مقاله الزامی است",
+        }
     }
 
 }
