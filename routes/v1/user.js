@@ -1,9 +1,10 @@
 const express = require('express')
 
 const banController = require('./../../controllers/v1/ban')
+const userController = require('./../../controllers/v1/user')
+const followingController = require('./../../controllers/v1/following')
 const authMiddleware = require('./../../middlewares/auth')
 const isAdminMiddleware = require('./../../middlewares/isAdmin')
-const userController = require('./../../controllers/v1/user')
 
 const router = express.Router()
 
@@ -14,5 +15,8 @@ router.get('/:id', authMiddleware, isAdminMiddleware, userController.getById)
 router.delete('/:id', authMiddleware, isAdminMiddleware, userController.remove)
 router.put('/:id', authMiddleware, userController.update)
 router.post('/change-role/:id', authMiddleware, isAdminMiddleware, userController.changeRole)
+
+router.post('/:id/follow', authMiddleware, followingController.followUser)
+router.delete('/:id/unfollow', authMiddleware, followingController.unfollowUser)
 
 module.exports = router

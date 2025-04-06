@@ -3,7 +3,6 @@ const tagModel = require('./../../models/tag')
 const commentModel = require('./../../models/comment')
 const validator = require('./../../validators/article')
 const isValidId = require('./../../utils/isValidID')
-const { populate } = require("dotenv");
 const { generateManualSlug } = require("../../utils/slug");
 
 exports.create = async (req, res) => {
@@ -164,7 +163,6 @@ exports.edit = async (req, res) => {
 
         return res.status(200).json({ message: 'مقاله ویرایش شد' })
     } catch ( error ) {
-        console.log(error.message)
         return res.status(500).json({ message: 'خطا در سرور' })
     }
 }
@@ -182,7 +180,7 @@ exports.remove = async (req, res) => {
         }
 
         return res.status(200).json({ message: 'مقاله با موفقیت حذف شد .' })
-    } catch ( e ) {
+    } catch ( error ) {
         return res.status(500).json({ message: 'خطا در سرور' })
     }
 }
