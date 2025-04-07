@@ -7,7 +7,9 @@ const usersRouter = require('./routes/v1/user')
 const articlesRouter = require('./routes/v1/article')
 const commentsRouter = require('./routes/v1/comment')
 const categoriesRouter = require('./routes/v1/category')
+const interestsRouter = require('./routes/v1/interest')
 const userController = require("./controllers/v1/user");
+
 
 const app = express()
 app.use(express.json())
@@ -24,5 +26,6 @@ app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/articles', articlesRouter)
 app.use('/api/v1/comments', commentsRouter)
 app.use('/api/v1/categories', categoriesRouter)
+app.use('/api/v1/interests', interestsRouter)
 
 module.exports = app
