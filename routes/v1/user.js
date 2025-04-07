@@ -10,6 +10,7 @@ const router = express.Router()
 
 router.route('/suspend/:id').put(authMiddleware, isAdminMiddleware, banController.suspend)
 
+// router.get('/@:username', userController.getByUserName)
 router.get('/', authMiddleware, isAdminMiddleware, userController.getAll)
 router.get('/:id', authMiddleware, isAdminMiddleware, userController.getById)
 router.delete('/:id', authMiddleware, isAdminMiddleware, userController.remove)

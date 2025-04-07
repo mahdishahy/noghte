@@ -137,3 +137,31 @@ exports.update = async (req, res) => {
         return res.status(500).json({ message: "خطا در سرور" });
     }
 };
+
+exports.getByUserName = async (req, res) => {
+    try {
+        const match = req.path.match(/^\/@([a-zA-Z0-9_]{5,15})$/);
+        const username = match?.[1]
+
+        if ( !username ) {
+            return res.status(400).json({ message: 'نام کاربری نا معتبر است' })
+        }
+
+        // get user
+        const user = await userModel.findOne({ username })
+            .select('-password -phone_number -suspension_reason -__v')
+
+        // check user suspension
+        if ( user.is_suspended ) {
+            return res.status(403).json({ message: 'این کاربر به دلیل تخلفات محرز تعلیق میباشد' })
+        }
+
+        if ( !user ) {
+            return res.status(404).json({ message: 'کاربر مورد نظر یافت نشد' })
+        }
+
+        return res.status(200).json(user)
+    } catch ( error ) {
+        return res.status(500).json({ message: 'خطا در سرور' })
+    }
+}
