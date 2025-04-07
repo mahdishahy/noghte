@@ -149,6 +149,8 @@ exports.getByUserName = async (req, res) => {
 
         // get user
         const user = await userModel.findOne({ username })
+            .populate('follower', 'username')
+            .populate('followed', 'username')
             .select('-password -phone_number -suspension_reason -__v')
 
         // check user suspension
