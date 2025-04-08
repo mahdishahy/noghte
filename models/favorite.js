@@ -12,6 +12,6 @@ const schema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-const model = mongoose.model("Interest", schema);
+const model = mongoose.model("Favorite", schema);
 
 module.exports = model;

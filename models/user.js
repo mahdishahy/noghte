@@ -60,10 +60,12 @@ const schema = new mongoose.Schema({
             ref: 'User'
         }
     ],
-    interests: {
-        type: [String],
-        default: [],
-    },
+    favorites: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: 'Category'
+        }
+    ],
     image_url: {
         type: String,
         default: null,

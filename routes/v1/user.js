@@ -3,6 +3,7 @@ const express = require('express')
 const banController = require('./../../controllers/v1/ban')
 const userController = require('./../../controllers/v1/user')
 const followingController = require('./../../controllers/v1/following')
+const favoriteController = require('./../../controllers/v1/favorite')
 const authMiddleware = require('./../../middlewares/auth')
 const isAdminMiddleware = require('./../../middlewares/isAdmin')
 
@@ -19,5 +20,9 @@ router.post('/change-role/:id', authMiddleware, isAdminMiddleware, userControlle
 
 router.post('/:id/follow', authMiddleware, followingController.followUser)
 router.delete('/:id/unfollow', authMiddleware, followingController.unfollowUser)
+
+// favorites
+router.get('/profile/favorites', authMiddleware, favoriteController.get)
+router.post('/profile/favorites/store', authMiddleware, favoriteController.create)
 
 module.exports = router

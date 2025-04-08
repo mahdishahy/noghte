@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const { generateSlug } = require("../middlewares/article");
 
 const schema = new mongoose.Schema({
     title: {
