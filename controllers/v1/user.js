@@ -1,6 +1,7 @@
 const userModel = require("./../../models/user");
 const isValidId = require("./../../utils/isValidID");
 const passwordUtils = require("./../../utils/password");
+const paginate = require("./../../utils/paginate");
 
 exports.getById = async (req, res) => {
     try {
@@ -25,12 +26,13 @@ exports.getById = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const users = await userModel
-            .find({})
-            .select("-password -__v")
-            .sort({ createdAt: -1 })
-            .lean();
-        return res.status(200).json({ users });
+        const users = await paginate(userModel, {
+            page: req.query.page,
+            limit: req.query.limit,
+            useLean: true,
+            select: '-password -__v'
+        });
+        return res.status(200).json(users);
     } catch ( error ) {
         return res.status(500).json({ message: "خطا در سرور" });
     }

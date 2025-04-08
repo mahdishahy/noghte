@@ -1,6 +1,7 @@
 const categoryModel = require('./../../models/category')
 const validator = require('./../../validators/category')
 const isValidId = require('./../../utils/isValidID')
+const paginate = require("./../../utils/paginate");
 
 exports.create = async (req, res) => {
     try {
@@ -31,11 +32,12 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const categories = await categoryModel.find({})
-            .select('-__v')
-            .lean()
-            .sort({ createdAt: -1 })
-
+        const categories = await paginate(categoryModel, {
+            page: req.query.page,
+            limit: req.query.limit,
+            select: '-__v',
+            useLean: true,
+        })
 
         return res.status(200).json(categories)
         // return res.status(200).json({ articles })
