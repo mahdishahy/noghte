@@ -4,6 +4,7 @@ const commentModel = require('./../../models/comment')
 const validator = require('./../../validators/article')
 const isValidId = require('./../../utils/isValidID')
 const { generateManualSlug } = require("../../utils/slug");
+const paginate = require("./../../utils/paginate");
 
 exports.create = async (req, res) => {
     try {
@@ -52,34 +53,24 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const articles = await articleModel.find({})
-            .populate('tags', 'title')
-            .populate('owner', 'username -_id')
-            .populate('category', 'title')
-            .select('-__v')
-            .lean()
-            .sort({ createdAt: -1 })
-
-        // get articles comments
-        const comments = await commentModel.find({})
-            .populate('user', 'full_name -_id')
-            .lean()
-            .select('-__v')
-
-        const allArticles = []
-
-        articles.forEach((article) => {
-            const articleComments = comments.filter((comment) => {
-                return comment.article.toString() === article._id.toString()
-            })
-
-            allArticles.push({
-                ...article, comments: articleComments
-            })
+        const articles = await paginate(articleModel, {
+            page: req.query.page,
+            limit: req.query.limit,
+            select: '-__v',
+            useLean: true,
+            populate: [
+                { path: 'tags', select: 'title' },
+                { path: 'owner', select: 'username -_id' },
+                { path: 'category', select: 'title -_id' },
+                {
+                    path: 'comments',
+                    select: 'content status -_id',
+                    populate: { path: 'user', select: 'full_name -_id' }
+                }
+            ]
         })
 
-        return res.status(200).json(allArticles)
-        // return res.status(200).json({ articles })
+        return res.status(200).json(articles)
     } catch ( error ) {
         return res.status(500).json({ message: 'خطا در سرور' })
     }

@@ -11,7 +11,7 @@ exports.create = async (req, res) => {
             return res.status(422).json({ message: 'کامنت شما حداقل باید 5 کاراکتر باشد' })
         }
 
-        article = await articleModel.findOne({ slug: articleSlug }).select('-__v').lean()
+        const article = await articleModel.findOne({ slug: articleSlug }).select('-__v').lean()
 
         const comment = commentModel.create({
             content,
