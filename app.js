@@ -5,15 +5,18 @@ const publicRoutes = require('./routes/v1/publicRoutes')
 const authRouter = require('./routes/v1/auth')
 const usersRouter = require('./routes/v1/user')
 const articlesRouter = require('./routes/v1/article')
+const bannersRouter = require('./routes/v1/banner')
 const commentsRouter = require('./routes/v1/comment')
 const categoriesRouter = require('./routes/v1/category')
 const userController = require("./controllers/v1/user");
+const path = require("node:path");
 
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet())
 app.use(cors())
+app.use('/', express.static(path.join(__dirname, '/public')));
 
 app.get('/', (req, res) => {
     return res.status(200).json({ message: "Welcome to noghte's API" })
@@ -24,5 +27,6 @@ app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/articles', articlesRouter)
 app.use('/api/v1/comments', commentsRouter)
 app.use('/api/v1/categories', categoriesRouter)
+app.use('/api/v1/banners', bannersRouter)
 
 module.exports = app
