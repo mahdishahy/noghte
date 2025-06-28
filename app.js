@@ -25,4 +25,8 @@ app.use('/api/v1/articles', articlesRouter)
 app.use('/api/v1/comments', commentsRouter)
 app.use('/api/v1/categories', categoriesRouter)
 
+app.use((req, res) => {
+    return res.status(404).json({ message: 'صفحه مورد وجود ندارد یا حذف شده است' })
+})
+
 module.exports = app
