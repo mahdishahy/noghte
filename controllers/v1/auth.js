@@ -1,7 +1,7 @@
 const userModel = require("./../../models/user");
 const registerValidator = require("./../../validators/register");
 const passwordUtils = require('./../../utils/password')
-const { generateAccessToken } = require('../../utils/getToken')
+const { generateTokens, verifyRefreshToken } = require('../../utils/getToken')
 
 exports.register = async (req, res) => {
     try {
@@ -32,7 +32,7 @@ exports.register = async (req, res) => {
         if ( user ) {
             return res.status(409).json({
                 message:
-                    "کاربری با این ایمیل، شماره تلفن یا نام کاربری از قبل وجود داره",
+                    "کاربری با این ایمیل، شماره تلفن یا نام کاربری از قبل وجود داره"
             });
         }
 
@@ -50,15 +50,25 @@ exports.register = async (req, res) => {
             phone_number,
             password: hashedPassword,
             role: countOfUser > 0 ? "USER" : "ADMIN",
+            refresh_token: null
         });
 
         // convert user into object and remove password key
         const userObject = passwordUtils.removeOnePropertyInObject(newUser, 'password');
 
         // generate access token
-        const accessToken = generateAccessToken(newUser.Id)
+        const { accessToken, refreshToken } = generateTokens(newUser)
 
-        return res.status(201).json({ user: userObject, accessToken });
+        // set refresh token
+        newUser.refresh_token = refreshToken
+        await newUser.save()
+
+        return res.status(201).json({
+            message: 'ثبت نام با موفقیت انجام شد',
+            user: userObject,
+            accessToken,
+            refreshToken
+        });
     } catch ( error ) {
         return res.status(500).json({ message: "خطای سرور" });
     }
@@ -85,20 +95,72 @@ exports.login = async (req, res) => {
         if ( !passwordUtils.isValidPassword(password, user.password) ) {
             return res
                 .status(403)
-                .json({ message: "کاربری با این نام کاربری یا پسورد یافت نشد" });
+                .json({ message: "ایمیل و رمزعبور صحیح نمی باشد" });
         }
 
         // convert user into object and remove password key
         const userObject = passwordUtils.removeOnePropertyInObject(user, 'password');
 
         // generate access token
-        const accessToken = generateAccessToken(user._id)
+        const { accessToken, refreshToken } = generateTokens(user)
 
-        return res.status(201).json({ user: userObject, accessToken });
+        // set refresh token
+        user.refresh_token = refreshToken
+        await user.save()
+
+        return res.status(200).json({ user: userObject, accessToken });
     } catch ( error ) {
         return res.status(500).json({ message: "خطای سرور" });
     }
 };
 
-exports.getMe = async (req, res) => {
+exports.refreshToken = async (req, res) => {
+    const { refreshToken } = req.body
+
+    if ( !refreshToken ) {
+        return res.status(400).json({
+            message: 'توکن رفرش الزامی است'
+        });
+    }
+
+    const decoded = verifyRefreshToken(refreshToken);
+    if ( !decoded ) {
+        return res.status(403).json({
+            message: 'توکن رفرش نا معتبر یا منقضی شده '
+        });
+    }
+
+    try {
+        const user = await userModel.findOne({ refresh_token: refreshToken });
+        if ( !user ) {
+            return res.status(404).json({
+                message: 'کاربر پیدا نشد'
+            });
+        }
+
+        if ( user.refresh_token !== refreshToken ) {
+            return res.status(403).json({
+                message: 'توکن رفرش برای این کاربر معتبر نمی باشد'
+            });
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+        user.refreshToken = newRefreshToken;
+        await user.save();
+
+        return res.json({
+            message: 'توکن‌ها با موفقیت بروزرسانی شدند',
+            accessToken,
+            refreshToken: newRefreshToken
+        });
+    } catch ( error ) {
+        return res.status(500).json({ message: "خطای سرور" });
+    }
 };
+
+
+// const tokens = {
+//     accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODVlY2IwZjVlNWRjNzBmMDI1MGQ3ZWQiLCJlbWFpbCI6ImFueWFfYm9laG01MkB5YWhvby5jb20iLCJpYXQiOjE3NTEwNDI4MzEsImV4cCI6MTc1MTA0MzczMX0.9mIMEX1haVBuX8lj94hf3MP-DwSLwWWj2AhlYGNTudc",
+//     refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODVlY2IwZjVlNWRjNzBmMDI1MGQ3ZWQiLCJlbWFpbCI6ImFueWFfYm9laG01MkB5YWhvby5jb20iLCJpYXQiOjE3NTEwNDI4MzEsImV4cCI6MTc1MzYzNDgzMX0.9eisGge_okIM2bjWrf-WYX4OT3K4mDR34chZ5Ex0eDk"
+// }

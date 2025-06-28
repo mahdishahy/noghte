@@ -1,10 +1,30 @@
-POST http://localhost:4000/api/v1/auth/login
+POST http://localhost:4000/api/v1/auth/refresh-token
 Content-Type: application/json
 
 {
-  "identifier": "hassan1",
-  "password": "Mahdi123"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODVmYzAxY2U1NDMxZTFiNDQwZWI3MDMiLCJlbWFpbCI6ImFhNHE1bWFoZGlAZ21haWwuY29tIiwiaWF0IjoxNzUxMTA1NTY0LCJleHAiOjE3NTM2OTc1NjR9.aCRNYQDGFmyMOrq8soiJqbJyAChHCdSTC_3cnhAIBq8"
 }
 
 ###
-#Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2RjYzY2YzdkOTFmYjRhM2QzZTQ1ZiIsImlhdCI6MTc0MTU0MDQ1NCwiZXhwIjoxNzQ0MTMyNDU0fQ.BAaSq_cy02pfQYwKpPr43EbeHnga8v44wWaF2h90NUY
+POST http://localhost:4000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "mahdi",
+  "username": "qqahdi1516",
+  "email": "aa4q5mahdi@gmail.com",
+  "password": "Mahdi123",
+  "confirm_password": "Mahdi123"
+}
+
+###
+GET http://localhost:4000/api/v1/users/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODVmYzAxY2U1NDMxZTFiNDQwZWI3MDMiLCJlbWFpbCI6ImFhNHE1bWFoZGlAZ21haWwuY29tIiwiaWF0IjoxNzUxMTA2MDEyLCJleHAiOjE3NTExMDYwNzJ9.hxAZ9fiDWQQ_UMleoHTvX1QinA8r2LYTUcHIM2NkcUo
+
+#{
+#  "identifier": "hassan1",
+#  "password": "Mahdi123"
+#}
+
+###
