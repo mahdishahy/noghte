@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const userModel = require('./../models/user')
-
+const { verifyAccessToken } = require('./../utils/getToken')
 module.exports = async (req, res, next) => {
     const authHeader = req.header('Authorization')?.split(' ')
     if ( authHeader?.length !== 2 ) {
@@ -9,8 +9,12 @@ module.exports = async (req, res, next) => {
 
     const token = authHeader[1]
     try {
-        const payloadData = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await userModel.findById(payloadData.id).lean()
+        const decodedUserData = verifyAccessToken(token)
+        if ( decodedUserData === null ) {
+            return res.status(403).json({ message: "توکن نامعتبر یا منقضی شده" })
+        }
+
+        const user = await userModel.findById(decodedUserData.userId).lean()
         if ( !user ) {
             return res.status(404).json({ message: "ابتدا وارد شوید ." })
         }

@@ -83,6 +83,7 @@ const schema = new mongoose.Schema({
         default: null,
         trim: true,
     },
+    refresh_token: String
 }, { timestamps: true })
 
 const model = mongoose.model('User', schema)
