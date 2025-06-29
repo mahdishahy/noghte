@@ -2,77 +2,75 @@ const userModel = require("./../../models/user");
 const isValidId = require("./../../utils/isValidID");
 const passwordUtils = require("./../../utils/password");
 const paginate = require("./../../utils/paginate");
+const AppError = require('./../../utils/AppError')
+const { StatusCode } = require('http-status-codes')
 
-exports.getById = async (req, res) => {
-    try {
-        const { id } = req.params;
+exports.getById = async (req, res, next) => {
+    const { id } = req.params;
 
-        // id validation
-        if ( !isValidId(id) ) {
-            return res.status(409).json({ message: "شناسه کاربر نامعتبر است" });
-        }
-
-        // get main user with id
-        const user = await userModel.findOne({ _id: id });
-        if ( !user ) {
-            return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
-        }
-
-        return res.status(200).json({ user });
-    } catch ( error ) {
-        return res.status(500).json({ message: "خطا در سرور" });
+    // id validation
+    if ( !isValidId(id) ) {
+        // return res.status(409).json({ message: "شناسه کاربر نامعتبر است" });
+        return next(new AppError('شناسه کاربر نا معتبر است', StatusCode.BAD_REQUEST))
     }
+
+    // get main user with id
+    const user = await userModel.findOne({ _id: id });
+    if ( !user ) {
+        // return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
+        return next(new AppError('کاربر مورد نظر یافت نشد', StatusCode.NOT_FOUND))
+    }
+
+    return res.json({ user });
 };
 
 exports.getAll = async (req, res) => {
-    try {
-        const users = await paginate(userModel, {
-            page: req.query.page,
-            limit: req.query.limit,
-            useLean: true,
-            select: '-password -__v'
-        });
-        return res.status(200).json(users);
-    } catch ( error ) {
-        return res.status(500).json({ message: "خطا در سرور" });
-    }
+    const users = await paginate(userModel, {
+        page: req.query.page,
+        limit: req.query.limit,
+        useLean: true,
+        select: '-password -__v'
+    });
+    return res.json(users);
 };
 
-exports.remove = async (req, res) => {
+exports.remove = async (req, res, next) => {
     try {
         const { id } = req.params;
 
         // id validation
         if ( !isValidId(id) ) {
-            return res.status(409).json({ message: "شناسه کاربر نامعتبر است" });
+            // return res.status(409).json({ message: "شناسه کاربر نامعتبر است" });
+            return next(new AppError('شناسه کاربر نامعتبر است', StatusCode.BAD_REQUEST))
         }
 
         // remove user with id
         const user = await userModel.findOneAndDelete({ _id: id });
         if ( !user ) {
-            return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
+            // return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
+            return next(new AppError('کاربر مورد نظر پیدا نشد', StatusCode.NOT_FOUND))
         }
 
-        return res.status(200).json({ message: "کاربر با موفقیت حذف شد" });
+        return res.json({ message: "کاربر با موفقیت حذف شد" });
     } catch ( error ) {
         return res.status(500).json({ message: "خطا در سرور" });
     }
 };
 
-exports.changeRole = async (req, res) => {
+exports.changeRole = async (req, res, next) => {
     try {
         const { id } = req.params;
         let { role } = req.body;
 
         // id validation
         if ( !isValidId(id) ) {
-            return res.status(409).json({ message: "شناسه کاربر نامعتبر است" });
+            return next(new AppError("شناسه کاربر نامعتبر است", StatusCodes.BAD_REQUEST));
         }
 
         role = role.toUpperCase();
         // role validation
         if ( role !== "ADMIN" || role !== "USER" ) {
-            return res.status(409).json({ message: "نقش کاربر نامعتبر است" });
+            return next(new AppError("نقش کاربر نامعتبر است. نقش باید 'ADMIN' یا 'USER' باشد.", StatusCodes.BAD_REQUEST));
         }
 
         // change user role with id
@@ -82,16 +80,14 @@ exports.changeRole = async (req, res) => {
             { new: true }
         );
         if ( !user ) {
-            return res.status(404).json({ message: "کاربر مورد نظر یافت نشد" });
+            return next(new AppError("کاربر مورد نظر یافت نشد", StatusCodes.NOT_FOUND));
         }
         const userObject = passwordUtils.removeOnePropertyInObject(
             user,
             "password"
         );
 
-        return res
-            .status(200)
-            .json({ message: "نقش کاربر با موفقیت تغییر کرد", user: userObject });
+        return res.json({ message: "نقش کاربر با موفقیت تغییر کرد", user: userObject });
     } catch ( error ) {
         return res.status(500).json({ message: "خطا در سرور" });
     }
