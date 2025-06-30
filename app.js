@@ -1,6 +1,9 @@
 const express = require('express');
 const helmet = require('helmet')
 const cors = require('cors')
+const morgan = require('morgan')
+const fs = require('fs')
+const path = require('path')
 const publicRoutes = require('./routes/v1/publicRoutes')
 const authRouter = require('./routes/v1/auth')
 const usersRouter = require('./routes/v1/user')
@@ -10,6 +13,10 @@ const categoriesRouter = require('./routes/v1/category')
 const userController = require("./controllers/v1/user");
 
 const app = express()
+const logDirectory = path.join(__dirname, 'logs');
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
+const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'access.log'), { flags: 'a' });
+app.use(morgan('combined', { stream: accessLogStream }));
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet())
