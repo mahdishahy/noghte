@@ -5,7 +5,7 @@ const { generateTokens, verifyRefreshToken } = require('../../utils/getToken')
 const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     // Data validation
     const validationResult = registerValidator(req.body);
     if ( validationResult !== true ) {

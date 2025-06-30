@@ -10,7 +10,7 @@ const port = process.env.PORT;
     await mongoose.connect(process.env.MONGO_URI)
     global.logger.info('Database Connected ...')
 } )()
-const x = a + 1
+
 const server = app.listen(port, () => {
     global.logger.info(`Server running on port ${ port }`)
 });
