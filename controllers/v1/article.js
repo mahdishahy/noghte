@@ -12,7 +12,7 @@ exports.create = async (req, res, next) => {
     // data validation
     const validationResult = validator(req.body)
     if ( validationResult !== true ) {
-        return next(new AppError("خطای اعتبارسنجی", StatusCodes.UNPROCESSABLE_ENTITY, validationResult));
+        return next(new AppError("خطای اعتبارسنجی " + validationResult, StatusCodes.UNPROCESSABLE_ENTITY));
     }
 
     //  attention: Article tags must be received as an array
