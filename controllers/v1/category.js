@@ -2,9 +2,10 @@ const categoryModel = require('./../../models/category')
 const validator = require('./../../validators/category')
 const isValidId = require('./../../utils/isValidID')
 const paginate = require("./../../utils/paginate");
+const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
 
     // data validation
     const validationResult = validator(req.body)
@@ -18,7 +19,7 @@ exports.create = async (req, res) => {
     const category = await categoryModel.create({
         title
     })
-    return res.status(201).json({
+    return res.status(StatusCodes.CREATED).json({
         message: 'دسته بندی شما با موفقیت اضافه شد .',
         category
     })
@@ -33,12 +34,12 @@ exports.getAll = async (req, res) => {
         useLean: true,
     })
 
-    return res.status(200).json(categories)
+    return res.json(categories)
     // return res.status(200).json({ articles })
 
 }
 
-exports.findOne = async (req, res) => {
+exports.findOne = async (req, res, next) => {
 
     const { identifier } = req.params
 
@@ -61,7 +62,7 @@ exports.findOne = async (req, res) => {
 
 
 // *********************************************************
-exports.edit = async (req, res) => {
+exports.edit = async (req, res, next) => {
 
     const { id } = req.params
     if ( !isValidId(id) ) {
@@ -77,7 +78,7 @@ exports.edit = async (req, res) => {
     return res.status(200).json({ message: 'دسته بندی ویرایش شد', category })
 
 }
-exports.remove = async (req, res) => {
+exports.remove = async (req, res, next) => {
     const { id } = req.params;
 
     if ( !isValidId(id) ) {

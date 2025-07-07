@@ -1,8 +1,9 @@
 const userModel = require('./../../models/user')
 const categoryModel = require('./../../models/category')
+const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
 
-exports.get = async (req, res) => {
+exports.get = async (req, res, next) => {
 
     const userId = req.user._id
 
@@ -10,7 +11,7 @@ exports.get = async (req, res) => {
     const user = await userModel.findById(userId).populate('favorites', 'title').select('-__v').lean()
 
     if ( user.favorites.length != 0 ) {
-        return res.status(200).json(user.favorites)
+        return res.json(user.favorites)
     }
 
     // get categories (favorites)
@@ -25,20 +26,19 @@ exports.get = async (req, res) => {
 
 }
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
 
     const userId = req.user._id
     const { favorites } = req.body
 
     if ( !Array.isArray(favorites) || favorites.length === 0 ) {
-        return res.status(400).json({ message: 'هیچ علاقه مندی انتخاب نشده' })
+        return next( new AppError('هیچ علاقه مندی انتخاب نشده', StatusCodes.BAD_REQUEST))
     }
 
     const categories = await categoryModel.find({ title: { $in: favorites } }).select('_id title').lean()
 
     if ( categories.length !== favorites.length ) {
         return next(new AppError('دسته بندی نامعتبر است ', StatusCodes.BAD_REQUEST))
-        return res.status(400).json({ message: 'دسته بندی نامعتبر است' })
     }
 
     // a list of new user favorites
@@ -53,6 +53,6 @@ exports.create = async (req, res) => {
         $set: { favorites: userFavorites }
     }, { new: true })
 
-    return res.status(200).json({ message: 'علاقه‌مندی‌ها با موفقیت ذخیره شدند.' });
+    return res.json({ message: 'علاقه‌مندی‌ها با موفقیت ذخیره شدند.' });
 
 }

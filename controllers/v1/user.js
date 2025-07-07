@@ -123,10 +123,7 @@ exports.update = async (req, res) => {
         "password"
     );
 
-    return res
-        .status(200)
-        .json({ message: "کاربر با موفقیت ویرایش شد", user: userObject });
-
+    return res.json({ message: "کاربر با موفقیت ویرایش شد", user: userObject });
 };
 
 exports.getByUserName = async (req, res) => {
@@ -153,6 +150,6 @@ exports.getByUserName = async (req, res) => {
         return next(new AppError('کاربر مورد نظر یافت نشد', StatusCodes.NOT_FOUND))
     }
 
-    return res.status(200).json(user)
+    return res.json(user)
 
 }

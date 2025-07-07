@@ -1,8 +1,9 @@
 const commentModel = require('./../../models/comment')
 const articleModel = require('./../../models/article')
+const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require("http-status-codes");
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
     const { content, articleSlug } = req.body
     const user = req.user._id
 
@@ -19,6 +20,6 @@ exports.create = async (req, res) => {
         user,
     })
 
-    return res.status(201).json({ message: 'نظر شما ثبت شد بعد از تایید نمایش داده خواهد شد' })
+    return res.status(StatusCodes.CREATED).json({ message: 'نظر شما ثبت شد بعد از تایید نمایش داده خواهد شد' })
 
 }

@@ -1,8 +1,9 @@
 const userModel = require('./../../models/user')
 const isValidId = require('./../../utils/isValidID')
+const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
 
-exports.followUser = async (req, res) => {
+exports.followUser = async (req, res, next) => {
     const currentUserId = req.user._id
     const targetUserId = req.params.id
 
@@ -45,7 +46,7 @@ exports.followUser = async (req, res) => {
 
 }
 
-exports.unfollowUser = async (req, res) => {
+exports.unfollowUser = async (req, res, next) => {
 
     const currentUserId = req.user._id
     const targetUserId = req.params.id
@@ -80,6 +81,6 @@ exports.unfollowUser = async (req, res) => {
         })
     ])
 
-    return res.status(200).json({ message: 'کاربر مورد نظر با موفقیت از لیست دنبال‌شوندگان شما حذف شد.' })
+    return res.json({ message: 'کاربر مورد نظر با موفقیت از لیست دنبال‌شوندگان شما حذف شد.' })
 
 }

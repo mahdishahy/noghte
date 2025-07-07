@@ -9,7 +9,7 @@ exports.register = async (req, res, next) => {
     // Data validation
     const validationResult = registerValidator(req.body);
     if ( validationResult !== true ) {
-        return next(new AppError("خطای اعتبارسنجی" + validationResult, StatusCodes.UNPROCESSABLE_ENTITY));
+        return next(new AppError('خطای اعتبارسنجی', StatusCodes.UNPROCESSABLE_ENTITY));
     }
 
     // receive data from request body
