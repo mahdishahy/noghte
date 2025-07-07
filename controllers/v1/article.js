@@ -66,8 +66,9 @@ exports.getAll = async (req, res) => {
 }
 
 exports.findOne = async (req, res, next) => {
+    console.log("JHI");
     const { identifier } = req.params
-
+    console.log(identifier);
     // identifier validation
     if ( identifier == '' || identifier === null ) {
         return next(new AppError('شناسه مقاله دریافت نشد', StatusCodes.CONFLICT))
@@ -80,7 +81,9 @@ exports.findOne = async (req, res, next) => {
         .populate('category', 'title')
         .select('-__v')
         .lean()
-
+    if ( !article ) {
+        return next(new AppError('شناسه مقاله یاقت نشد', StatusCodes.NOT_FOUND))
+    }
     // get comments
     const comments = await commentModel.find({ article: article._id, status: 'approved' })
         .populate('user', 'full_name -_id -article')
