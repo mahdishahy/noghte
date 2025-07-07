@@ -12,6 +12,7 @@ const usersRouter = require('./routes/v1/user')
 const articlesRouter = require('./routes/v1/article')
 const commentsRouter = require('./routes/v1/comment')
 const categoriesRouter = require('./routes/v1/category')
+const searchRouter = require('./routes/v1/search')
 const userController = require("./controllers/v1/user");
 const { StatusCodes } = require("http-status-codes");
 
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
     return res.status(200).json({ message: "Welcome to noghte's API" })
 })
 app.use('/', publicRoutes)
+app.use('/api/v1/search', searchRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/articles', articlesRouter)
