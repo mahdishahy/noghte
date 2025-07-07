@@ -1,60 +1,58 @@
 const userModel = require('./../../models/user')
 const categoryModel = require('./../../models/category')
+const AppError = require('./../../utils/AppError');
+const { StatusCodes } = require('http-status-codes');
 
-exports.get = async (req, res) => {
-    try {
-        const userId = req.user._id
+exports.get = async (req, res, next) => {
 
-        // get user
-        const user = await userModel.findById(userId).populate('favorites', 'title').select('-__v').lean()
+    const userId = req.user._id
 
-        if ( user.favorites.length != 0 ) {
-            return res.status(200).json(user.favorites)
-        }
+    // get user
+    const user = await userModel.findById(userId).populate('favorites', 'title').select('-__v').lean()
 
-        // get categories (favorites)
-        const categories = await categoryModel.find({})
-            .select('title')
-            .lean()
-
-        return res.status(200).json({
-            message: 'شما هیچ علاقه مندی ندارید. لطفا علاقه مندی های خود را اضافه بکنید',
-            categories
-        })
-    } catch ( error ) {
-        return res.status(500).json({ message: 'خطا در سرور' })
+    if ( user.favorites.length != 0 ) {
+        return res.json(user.favorites)
     }
+
+    // get categories (favorites)
+    const categories = await categoryModel.find({})
+        .select('title')
+        .lean()
+
+    return res.status(200).json({
+        message: 'شما هیچ علاقه مندی ندارید. لطفا علاقه مندی های خود را اضافه بکنید',
+        categories
+    })
+
 }
 
-exports.create = async (req, res) => {
-    try {
-        const userId = req.user._id
-        const { favorites } = req.body
+exports.create = async (req, res, next) => {
 
-        if ( !Array.isArray(favorites) || favorites.length === 0 ) {
-            return res.status(400).json({ message: 'هیچ علاقه مندی انتخاب نشده' })
-        }
+    const userId = req.user._id
+    const { favorites } = req.body
 
-        const categories = await categoryModel.find({ title: { $in: favorites } }).select('_id title').lean()
-
-        if ( categories.length !== favorites.length ) {
-            return res.status(400).json({ message: 'دسته بندی نامعتبر است' })
-        }
-
-        // a list of new user favorites
-        let userFavorites = []
-
-        for ( const category of categories ) {
-            userFavorites.push(category._id)
-        }
-
-        // update user
-        const user = await userModel.findByIdAndUpdate(userId, {
-            $set: { favorites: userFavorites }
-        }, { new: true })
-
-        return res.status(200).json({ message: 'علاقه‌مندی‌ها با موفقیت ذخیره شدند.' });
-    } catch ( error ) {
-        return res.status(500).json({ message: 'خطا در سرور' })
+    if ( !Array.isArray(favorites) || favorites.length === 0 ) {
+        return next( new AppError('هیچ علاقه مندی انتخاب نشده', StatusCodes.BAD_REQUEST))
     }
+
+    const categories = await categoryModel.find({ title: { $in: favorites } }).select('_id title').lean()
+
+    if ( categories.length !== favorites.length ) {
+        return next(new AppError('دسته بندی نامعتبر است ', StatusCodes.BAD_REQUEST))
+    }
+
+    // a list of new user favorites
+    let userFavorites = []
+
+    for ( const category of categories ) {
+        userFavorites.push(category._id)
+    }
+
+    // update user
+    const user = await userModel.findByIdAndUpdate(userId, {
+        $set: { favorites: userFavorites }
+    }, { new: true })
+
+    return res.json({ message: 'علاقه‌مندی‌ها با موفقیت ذخیره شدند.' });
+
 }

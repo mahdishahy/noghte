@@ -2,107 +2,92 @@ const categoryModel = require('./../../models/category')
 const validator = require('./../../validators/category')
 const isValidId = require('./../../utils/isValidID')
 const paginate = require("./../../utils/paginate");
+const AppError = require('./../../utils/AppError');
+const { StatusCodes } = require('http-status-codes');
 
-exports.create = async (req, res) => {
-    try {
-        // data validation
-        const validationResult = validator(req.body)
-        if ( validationResult !== true ) {
-            return res
-                .status(422)
-                .json({ message: 'خطای اعتبارسنجی', error: validationResult });
-        }
+exports.create = async (req, res, next) => {
 
-        const { title } = req.body;
-
-        // create new category
-        const category = await categoryModel.create({
-            title
-        })
-        return res.status(201).json({
-            message: 'دسته بندی شما با موفقیت اضافه شد .',
-            category
-        })
-    } catch ( error ) {
-        console.log(error.message)
-        return res.status(500).json({ message: 'خطا در سرور' })
+    // data validation
+    const validationResult = validator(req.body)
+    if ( validationResult !== true ) {
+        return next(new AppError('خطای اعتبار سنجی', StatusCodes.UNPROCESSABLE_ENTITY))
     }
+
+    const { title } = req.body;
+
+    // create new category
+    const category = await categoryModel.create({
+        title
+    })
+    return res.status(StatusCodes.CREATED).json({
+        message: 'دسته بندی شما با موفقیت اضافه شد .',
+        category
+    })
 
 }
 
 exports.getAll = async (req, res) => {
-    try {
-        const categories = await paginate(categoryModel, {
-            page: req.query.page,
-            limit: req.query.limit,
-            select: '-__v',
-            useLean: true,
-        })
+    const categories = await paginate(categoryModel, {
+        page: req.query.page,
+        limit: req.query.limit,
+        select: '-__v',
+        useLean: true,
+    })
 
-        return res.status(200).json(categories)
-        // return res.status(200).json({ articles })
-    } catch ( error ) {
-        return res.status(500).json({ message: 'خطا در سرور' })
-    }
+    return res.json(categories)
+    // return res.status(200).json({ articles })
+
 }
 
-exports.findOne = async (req, res) => {
-    try {
-        const { identifier } = req.params
+exports.findOne = async (req, res, next) => {
 
-        // identifier validation
-        if ( identifier == '' || identifier === null ) {
-            return res.status(409).json({ message: 'شناسه دسته بندی دریافت نشد' })
-        }
+    const { identifier } = req.params
 
-        // get category
-        const category = await categoryModel.findOne({ _id: identifier })
-            .select('-__v')
-            .lean()
-        if ( !category ) {
-            return res.status(404).json({ message: 'دسته بندی مورد نظر یافت نشد' })
-        }
-
-        res.status(200).json({ category })
-    } catch ( error ) {
-        return res.status(500).json({ message: 'خطا در سرور' })
+    // identifier validation
+    if ( identifier == '' || identifier === null ) {
+        return next(new AppError('شناسه دسته بندی دریافت نشد', StatusCodes.CONFLICT))
     }
+
+    // get category
+    const category = await categoryModel.findOne({ _id: identifier })
+        .select('-__v')
+        .lean()
+    if ( !category ) {
+        return next(new AppError('دسته بندی مورد نظر یافت نشد', StatusCodes.NOT_FOUND))
+    }
+
+    res.status(200).json({ category })
+
 }
 
 
 // *********************************************************
-exports.edit = async (req, res) => {
-    try {
-        const { id } = req.params
-        if ( !isValidId(id) ) {
-            return res.status(400).json({ message: 'شناسه دسته بندی نامعتبر است' })
-        }
+exports.edit = async (req, res, next) => {
 
-        let { title } = req.body
-
-        const category = await categoryModel.findByIdAndUpdate({ _id: id }, { title }, { new: true }).select('-__v');
-        if ( !category ) {
-            return res.status(404).json({ message: 'دسته بندی مورد نظر یافت نشد' })
-        }
-        return res.status(200).json({ message: 'دسته بندی ویرایش شد', category })
-    } catch ( error ) {
-        console.log(error.message)
-        return res.status(500).json({ message: 'خطا در سرور' })
+    const { id } = req.params
+    if ( !isValidId(id) ) {
+        return next(new AppError('شناسه دسته بندی نامعتبر است', StatusCodes.BAD_REQUEST))
     }
+
+    let { title } = req.body
+
+    const category = await categoryModel.findByIdAndUpdate({ _id: id }, { title }, { new: true }).select('-__v');
+    if ( !category ) {
+        return next(new AppError('دسته بندی مورد نظر یافت نشد', StatusCodes.NOT_FOUND))
+    }
+    return res.status(200).json({ message: 'دسته بندی ویرایش شد', category })
+
 }
-exports.remove = async (req, res) => {
+exports.remove = async (req, res, next) => {
     const { id } = req.params;
-    try {
 
-        if ( !isValidId(id) ) {
-            return res.status(400).json({ message: 'شناسه دسته بندی نامعتبر است' })
-        }
-        const category = await categoryModel.findOneAndDelete({ _id: id });
-        if ( !category ) {
-            return res.status(404).json({ message: 'همچین دسته بندی ای وجود نداره' });
-        }
-        return res.status(200).json({ message: 'دسته بندی با موفقیت حذف شد .' })
-    } catch ( e ) {
-        return res.status(500).json({ message: 'خطا در سرور' })
+    if ( !isValidId(id) ) {
+        return next(new AppError('شناسه دسته بندی نامعتبر است', StatusCodes.BAD_REQUEST))
     }
+    const category = await categoryModel.findOneAndDelete({ _id: id });
+    if ( !category ) {
+        return next(new AppError('دسته بندی مورد نظر یافت نشد', StatusCodes.NOT_FOUND))
+    }
+    return res.status(200).json({ message: 'دسته بندی با موفقیت حذف شد .' })
+
 }

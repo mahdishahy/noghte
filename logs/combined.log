@@ -1,0 +1,3 @@
+{"level":"info","message":"Winston logger configured soccessfully","timestamp":"2025-06-30T16:14:17.205Z"}
+{"level":"info","message":"Server running on port 4000","timestamp":"2025-06-30T16:14:17.394Z"}
+{"level":"info","message":"Database Connected ...","timestamp":"2025-06-30T16:14:17.465Z"}
