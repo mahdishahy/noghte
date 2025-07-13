@@ -13,7 +13,13 @@ const schema = new mongoose.Schema({
     article: {
         type: mongoose.Types.ObjectId,
         ref: 'Article',
-        required: true
+        required: false
+    },
+
+    podcast: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Podcast',
+        required: false
     },
     mainCommentId: {
         type: mongoose.Types.ObjectId,
