@@ -7,11 +7,12 @@ const { generateManualSlug } = require("../../utils/slug");
 const paginate = require("./../../utils/paginate");
 const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
+const { incrementLike, decrementLike, getLikeCount } = require('../../utils/like')
 
 exports.create = async (req, res, next) => {
     // data validation
     const validationResult = validator(req.body)
-    if ( validationResult !== true ) {
+    if (validationResult !== true) {
         return next(new AppError("خطای اعتبارسنجی " + validationResult, StatusCodes.UNPROCESSABLE_ENTITY));
     }
 
@@ -19,16 +20,16 @@ exports.create = async (req, res, next) => {
     const { title, content, image_url, tags, category } = req.body;
 
     // validate category _id
-    if ( !isValidId(category) ) {
+    if (!isValidId(category)) {
         return next(new AppError('دسته باندی نا معتبر است', StatusCodes.BAD_REQUEST))
     }
 
     const owner = req.user._id
     const tagIDs = []
 
-    for ( const tagName of tags ) {
+    for (const tagName of tags) {
         let tag = await tagModel.findOne({ title: tagName })
-        if ( !tag ) {
+        if (!tag) {
             tag = await tagModel.create({ title: tagName })
         }
         tagIDs.push(tag._id)
@@ -70,7 +71,7 @@ exports.findOne = async (req, res, next) => {
     const { identifier } = req.params
     console.log(identifier);
     // identifier validation
-    if ( identifier == '' || identifier === null ) {
+    if (identifier == '' || identifier === null) {
         return next(new AppError('شناسه مقاله دریافت نشد', StatusCodes.CONFLICT))
     }
 
@@ -81,7 +82,7 @@ exports.findOne = async (req, res, next) => {
         .populate('category', 'title')
         .select('-__v')
         .lean()
-    if ( !article ) {
+    if (!article) {
         return next(new AppError('شناسه مقاله یاقت نشد', StatusCodes.NOT_FOUND))
     }
     // get comments
@@ -95,7 +96,7 @@ exports.findOne = async (req, res, next) => {
 
 exports.edit = async (req, res, next) => {
     const { id } = req.params
-    if ( !isValidId(id) ) {
+    if (!isValidId(id)) {
         return next(new AppError('شناسه مقاله نا معتبر است', StatusCodes.BAD_REQUEST))
     }
 
@@ -103,30 +104,30 @@ exports.edit = async (req, res, next) => {
     const userId = req.user._id
 
     const article = await articleModel.findById(id)
-    if ( !article ) {
+    if (!article) {
         return next(new AppError('مقاله مورد نظر پیدا نشد', StatusCodes.NOT_FOUND))
     }
 
-    if ( article.owner.toString() !== userId.toString() ) {
+    if (article.owner.toString() !== userId.toString()) {
         return next(new AppError('شما اجازه ویرایش مقاله را ندارید', StatusCodes.FORBIDDEN))
     }
     // validate category _id
-    if ( category && !isValidId(category) ) {
+    if (category && !isValidId(category)) {
         return next(new AppError('دسته بندی نا معتبر است', StatusCodes.BAD_REQUEST))
     }
 
-    if ( title && title !== article.title ) {
+    if (title && title !== article.title) {
         req.body.slug = generateManualSlug(title)
     }
 
     let tagIds = [];
-    if ( !tags ) {
+    if (!tags) {
         tags = article.tags
     }
 
-    for ( const tagName of tags ) {
+    for (const tagName of tags) {
         let tag = await tagModel.findOne({ title: tagName });
-        if ( !tag ) {
+        if (!tag) {
             tag = await tagModel.create({ title: tagName });
         }
         tagIds.push(tag._id);
@@ -144,14 +145,24 @@ exports.edit = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
     const { id } = req.params;
 
-    if ( !isValidId(id) ) {
+    if (!isValidId(id)) {
         return next(new AppError('شناسه مقاله نامعتبر است', StatusCodes.BAD_REQUEST))
     }
 
     const article = await articleModel.findOneAndDelete({ _id: id });
-    if ( !article ) {
+    if (!article) {
         return next(new AppError('همچین مقاله ای وجود ندارد', StatusCodes.NOT_FOUND))
     }
 
     return res.json({ message: 'مقاله با موفقیت حذف شد .' })
+}
+exports.like = async (req, res, next) => {
+    incrementLike(articleModel, req, res, next)
+}
+
+exports.dislike = async (req, res, next) => {
+    decrementLike(articleModel, req, res, next)
+}
+exports.getLikes = async (req, res, next) => {
+    getLikeCount(articleModel, req, res, next)
 }

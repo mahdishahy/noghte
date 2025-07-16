@@ -15,6 +15,12 @@ const schema = new mongoose.Schema({
         trim: true,
         minLength: 10
     },
+    likes: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "User",
+        }
+    ],
     slug: {
         type: String,
         unique: true,
