@@ -13,7 +13,13 @@ const schema = new mongoose.Schema({
     article: {
         type: mongoose.Types.ObjectId,
         ref: 'Article',
-        required: true
+        required: false
+    },
+
+    podcast: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Podcast',
+        required: false
     },
     mainCommentId: {
         type: mongoose.Types.ObjectId,
@@ -21,8 +27,8 @@ const schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
-        default: 'pending'
+        enum: ["PENDING", "APPROVED", "REJECTED"],
+        default: 'PENDING'
     }
 }, { timestamps: true });
 

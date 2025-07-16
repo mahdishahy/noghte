@@ -2,3 +2,7 @@ node_modules/
 .idea
 _logs
 test.http
+access.log
+combined._log
+error.log
+unhandleRejections.log

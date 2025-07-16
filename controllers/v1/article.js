@@ -67,9 +67,7 @@ exports.getAll = async (req, res) => {
 }
 
 exports.findOne = async (req, res, next) => {
-    console.log("JHI");
     const { identifier } = req.params
-    console.log(identifier);
     // identifier validation
     if (identifier == '' || identifier === null) {
         return next(new AppError('شناسه مقاله دریافت نشد', StatusCodes.CONFLICT))
@@ -156,6 +154,7 @@ exports.remove = async (req, res, next) => {
 
     return res.json({ message: 'مقاله با موفقیت حذف شد .' })
 }
+
 exports.like = async (req, res, next) => {
     incrementLike(articleModel, req, res, next)
 }
@@ -165,4 +164,20 @@ exports.dislike = async (req, res, next) => {
 }
 exports.getLikes = async (req, res, next) => {
     getLikeCount(articleModel, req, res, next)
+}
+exports.changeStatus = async (req, res, next) => {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    const allowdStatuses = ["DRAFT", "PUBLISHED", "PENDING"];
+
+    if (!isValidId(id)) {
+        return next(new AppError('همچین مقاله ای یافت نشد ', StatusCodes.NOT_FOUND))
+    }
+    if (!allowdStatuses.includes(status)) {
+        return next(new AppError('وضیعت مقاله وارد شده نامعتبر است ', StatusCodes.BAD_REQUEST))
+    }
+    const article = await articleModel.findByIdAndUpdate({ _id: id }, { status }, { new: true });
+
+    res.status(200).json({ message: `وضعیت مقاله با موفقیت تغییر کرد `, article });
 }
