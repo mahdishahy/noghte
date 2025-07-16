@@ -9,7 +9,7 @@ const schema = new mongoose.Schema({
         trim: true,
         minLength: 1,
     },
-    podcast: {
+    podcast_sound: {
         type: String,
         required: true,
         trim: true,

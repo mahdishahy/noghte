@@ -12,13 +12,13 @@ const schema = {
             stringMin: "حداقل طول عنوان باید ۱ کارکتر باشد"
         }
     },
-    podcast: {
+    podcast_sound: {
         type: "string",
-        min: 10,
+        min: 1,
         trim: true,
         messages: {
             required: "آدرس پادکست الزامی است",
-            stringMin: "حداقل طول آدرس باید ۳ کارکتر باشد"
+            stringMin: "حداقل طول آدرس باید ۱ کارکتر باشد"
         }
     },
     slug: {

@@ -12,11 +12,12 @@ exports.create = async (req, res, next) => {
     // data validation
     const validationResult = validator(req.body)
     if (validationResult !== true) {
-        return next(new AppError("خطای اعتبارسنجی " + validationResult, StatusCodes.UNPROCESSABLE_ENTITY));
+        return next(new AppError("خطای اعتبارسنجی " + JSON.stringify(validationResult), StatusCodes.UNPROCESSABLE_ENTITY));
     }
 
     //  attention: podcast tags must be received as an array
-    const { title, podcast, image_url, tags, category } = req.body;
+    const { title, podcast_sound, image_url, tags, category } = req.body;
+    console.log({ title, podcast_sound, image_url, tags, category });
 
     // validate category _id
     if (!isValidId(category)) {
@@ -36,7 +37,7 @@ exports.create = async (req, res, next) => {
 
     // create new podcast
     const newPodcast = podcastModel.create({
-        title, podcast, image_url, owner, tags: tagIDs, category
+        title, podcast_sound, image_url, owner, tags: tagIDs, category
     })
     return res.status(StatusCodes.CREATED).json({
         message: 'پادکست با موفقیت ساخته شد و در دست بررسی است، پس از تایید در وبسایت منتظر خواهد شد'
