@@ -12,4 +12,8 @@ router.route('/edit/:id').put(authMiddleware, isAdmin, controller.edit)
 router.route('/delete/:id').delete(authMiddleware, isAdmin, controller.remove)
 router.route('/change-status/:id').patch(authMiddleware, isAdmin, controller.changeStatus)
 
+router.route('/like/:id').post(authMiddleware, controller.like)
+router.route('/disLike/:id').post(authMiddleware, controller.dislike)
+router.route('/getLike/:id').get(authMiddleware, controller.getLikes)
+
 module.exports = router

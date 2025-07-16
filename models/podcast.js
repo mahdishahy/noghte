@@ -19,6 +19,12 @@ const schema = new mongoose.Schema({
         type: String,
         unique: true,
     },
+    likes: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: "User",
+        }
+    ],
     image_url: {
         type: String,
         default: null
