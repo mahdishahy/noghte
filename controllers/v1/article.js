@@ -10,39 +10,75 @@ const { StatusCodes } = require('http-status-codes');
 const { incrementLike, decrementLike, getLikeCount } = require('../../utils/like')
 
 exports.create = async (req, res, next) => {
-    // data validation
-    const validationResult = validator(req.body)
-    if (validationResult !== true) {
-        return next(new AppError("خطای اعتبارسنجی " + validationResult, StatusCodes.UNPROCESSABLE_ENTITY));
-    }
-
     //  attention: Article tags must be received as an array
-    const { title, content, image_url, tags, category } = req.body;
+    const { title, content, image_url, tags, category, mode } = req.body;
+    const owner = req.user._id
 
-    // validate category _id
-    if (!isValidId(category)) {
-        return next(new AppError('دسته باندی نا معتبر است', StatusCodes.BAD_REQUEST))
+    if ( !mode || !['draft', 'submit'].includes(mode) ) {
+        return next(new AppError('حالت مقاله برای ارسال ان الزامی است و فقط یکی از دو  مقدار draft یا submit را در بر می گیرد'))
     }
 
-    const owner = req.user._id
+    if ( mode === 'submit' ) {
+        // data validation
+        const validationResult = validator(req.body)
+        if ( validationResult !== true ) {
+            return next(new AppError(`خطای اعتبارسنجی: تمامی فیلد ها الزامی هستند`, StatusCodes.UNPROCESSABLE_ENTITY));
+        }
+
+        // validate category _id
+        if ( !isValidId(category) ) {
+            return next(new AppError('شناسه دسته بندی  نا معتبر است', StatusCodes.BAD_REQUEST))
+        }
+
+        const tagIDs = []
+
+        for ( const tagName of tags ) {
+            let tag = await tagModel.findOne({ title: tagName })
+            if ( !tag ) {
+                tag = await tagModel.create({ title: tagName })
+            }
+            tagIDs.push(tag._id)
+        }
+
+        // create new article
+        const article = articleModel.create({
+            title, content, image_url, owner, tags: tagIDs, category
+        })
+        return res.status(StatusCodes.CREATED).json({
+            message: 'مقاله با موفقیت ساخته شد و در دست بررسی است، پس از تایید در وبسایت منتظر خواهد شد'
+        })
+    }
+
+    if ( !title || !content ) {
+        return next(new AppError('عنوان و محتوای مقاله الزامی هستند', StatusCodes.BAD_REQUEST))
+    }
+
     const tagIDs = []
 
-    for (const tagName of tags) {
-        let tag = await tagModel.findOne({ title: tagName })
-        if (!tag) {
-            tag = await tagModel.create({ title: tagName })
+    if ( tags ) {
+        for ( const tagName of tags ) {
+            let tag = await tagModel.findOne({ title: tagName })
+            if ( !tag ) {
+                tag = await tagModel.create({ title: tagName })
+            }
+            tagIDs.push(tag._id)
         }
-        tagIDs.push(tag._id)
     }
 
-    // create new article
-    const article = articleModel.create({
-        title, content, image_url, owner, tags: tagIDs, category
-    })
-    return res.status(StatusCodes.CREATED).json({
-        message: 'مقاله با موفقیت ساخته شد و در دست بررسی است، پس از تایید در وبسایت منتظر خواهد شد'
-    })
+    const draftArticle = await articleModel.create({
+        title: title,
+        content: content,
+        image_url: image_url || null,
+        category: isValidId(category) ? category : null,
+        tags: tagIDs,
+        owner,
+        status: "DRAFT"
+    });
 
+    return res.status(StatusCodes.CREATED).json({
+        message: "پیش‌نویس مقاله با موفقیت ذخیره شد.",
+        article: draftArticle
+    });
 }
 
 exports.getAll = async (req, res) => {
@@ -69,7 +105,7 @@ exports.getAll = async (req, res) => {
 exports.findOne = async (req, res, next) => {
     const { identifier } = req.params
     // identifier validation
-    if (identifier == '' || identifier === null) {
+    if ( identifier == '' || identifier === null ) {
         return next(new AppError('شناسه مقاله دریافت نشد', StatusCodes.CONFLICT))
     }
 
@@ -80,7 +116,7 @@ exports.findOne = async (req, res, next) => {
         .populate('category', 'title')
         .select('-__v')
         .lean()
-    if (!article) {
+    if ( !article ) {
         return next(new AppError('شناسه مقاله یاقت نشد', StatusCodes.NOT_FOUND))
     }
     // get comments
@@ -94,61 +130,60 @@ exports.findOne = async (req, res, next) => {
 
 exports.edit = async (req, res, next) => {
     const { id } = req.params
-    if (!isValidId(id)) {
-        return next(new AppError('شناسه مقاله نا معتبر است', StatusCodes.BAD_REQUEST))
+    const { mode } = req.body
+
+    if ( !mode || !['draft', 'submit'].includes(mode) ) {
+        return next(new AppError('حالت ارسال مقاله نا معتبر است', StatusCodes.BAD_REQUEST))
     }
 
-    let { title, content, image_url, tags, category } = req.body
-    const userId = req.user._id
-
     const article = await articleModel.findById(id)
-    if (!article) {
+    if ( !article ) {
         return next(new AppError('مقاله مورد نظر پیدا نشد', StatusCodes.NOT_FOUND))
     }
 
-    if (article.owner.toString() !== userId.toString()) {
-        return next(new AppError('شما اجازه ویرایش مقاله را ندارید', StatusCodes.FORBIDDEN))
-    }
-    // validate category _id
-    if (category && !isValidId(category)) {
-        return next(new AppError('دسته بندی نا معتبر است', StatusCodes.BAD_REQUEST))
-    }
-
-    if (title && title !== article.title) {
-        req.body.slug = generateManualSlug(title)
-    }
+    let { title, content, image_url, tags, category } = req.body
 
     let tagIds = [];
-    if (!tags) {
+    if ( !tags ) {
         tags = article.tags
     }
 
-    for (const tagName of tags) {
+    for ( const tagName of tags ) {
         let tag = await tagModel.findOne({ title: tagName });
-        if (!tag) {
+        if ( !tag ) {
             tag = await tagModel.create({ title: tagName });
         }
         tagIds.push(tag._id);
     }
 
-    const updatedArticle = await articleModel.findByIdAndUpdate(
-        { _id: id },
-        { title, content, image_url, tags: tagIds, category },
-        { new: true }
-    )
+    if ( category && !isValidId(category) ) {
+        return next(new AppError('دسته بندی نا معتبر است', StatusCodes.BAD_REQUEST))
+    }
 
-    return res.json({ message: 'مقاله ویرایش شد' })
+    article.title = title
+    article.content = content
+    article.tags = tagIds
+    article.category = category
+
+    if ( mode === 'submit' ) {
+        article.status = 'PENDING'
+    } else if ( mode === 'draft' ) {
+        article.status = 'DRAFT'
+    }
+
+    await article.save()
+    return res.json({ message: 'مقاله ذخیره شد', article })
 }
 
 exports.remove = async (req, res, next) => {
     const { id } = req.params;
 
-    if (!isValidId(id)) {
+    if ( !isValidId(id) ) {
         return next(new AppError('شناسه مقاله نامعتبر است', StatusCodes.BAD_REQUEST))
     }
 
     const article = await articleModel.findOneAndDelete({ _id: id });
-    if (!article) {
+    if ( !article ) {
         return next(new AppError('همچین مقاله ای وجود ندارد', StatusCodes.NOT_FOUND))
     }
 
@@ -165,16 +200,17 @@ exports.dislike = async (req, res, next) => {
 exports.getLikes = async (req, res, next) => {
     getLikeCount(articleModel, req, res, next)
 }
+
 exports.changeStatus = async (req, res, next) => {
     const { status } = req.body;
     const { id } = req.params;
 
     const allowdStatuses = ["DRAFT", "PUBLISHED", "PENDING"];
 
-    if (!isValidId(id)) {
+    if ( !isValidId(id) ) {
         return next(new AppError('همچین مقاله ای یافت نشد ', StatusCodes.NOT_FOUND))
     }
-    if (!allowdStatuses.includes(status)) {
+    if ( !allowdStatuses.includes(status) ) {
         return next(new AppError('وضیعت مقاله وارد شده نامعتبر است ', StatusCodes.BAD_REQUEST))
     }
     const article = await articleModel.findByIdAndUpdate({ _id: id }, { status }, { new: true });
