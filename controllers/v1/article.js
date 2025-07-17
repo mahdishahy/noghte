@@ -7,6 +7,7 @@ const { generateManualSlug } = require("../../utils/slug");
 const paginate = require("./../../utils/paginate");
 const AppError = require('./../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
+const { incrementLike, decrementLike, getLikeCount } = require('../../utils/like')
 
 exports.create = async (req, res, next) => {
     //  attention: Article tags must be received as an array
@@ -186,7 +187,18 @@ exports.remove = async (req, res, next) => {
         return next(new AppError('همچین مقاله ای وجود ندارد', StatusCodes.NOT_FOUND))
     }
 
-    return res.json({ message: 'مقاله با موفقیت حذف شد ' })
+    return res.json({ message: 'مقاله با موفقیت حذف شد .' })
+}
+
+exports.like = async (req, res, next) => {
+    incrementLike(articleModel, req, res, next)
+}
+
+exports.dislike = async (req, res, next) => {
+    decrementLike(articleModel, req, res, next)
+}
+exports.getLikes = async (req, res, next) => {
+    getLikeCount(articleModel, req, res, next)
 }
 
 exports.changeStatus = async (req, res, next) => {

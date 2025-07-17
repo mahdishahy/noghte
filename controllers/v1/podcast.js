@@ -7,6 +7,7 @@ const { generateManualSlug } = require("../../utils/slug");
 const paginate = require("../../utils/paginate");
 const AppError = require('../../utils/AppError');
 const { StatusCodes } = require('http-status-codes');
+const { incrementLike, decrementLike, getLikeCount } = require('../../utils/like')
 
 exports.create = async (req, res, next) => {
     // data validation
@@ -169,4 +170,15 @@ exports.changeStatus = async (req, res, next) => {
     const podcast = await podcastModel.findByIdAndUpdate({ _id: id }, { status }, { new: true });
 
     res.status(200).json({ message: `وضعیت پادکست با موفقیت تغییر کرد `, podcast });
+}
+
+exports.like = async (req, res, next) => {
+    incrementLike(podcastModel, req, res, next)
+}
+
+exports.dislike = async (req, res, next) => {
+    decrementLike(podcastModel, req, res, next)
+}
+exports.getLikes = async (req, res, next) => {
+    getLikeCount(podcastModel, req, res, next)
 }
