@@ -135,3 +135,13 @@ exports.getMe = async (req, res, next) => {
 
     return res.json(userWithOutPassword)
 }
+
+exports.logout = async (req, res, next) => {
+    const user = await userModel.findByIdAndUpdate({ _id: req.user._id }, {
+        refresh_token: null
+    }, { new: true })
+
+    return res.json({
+        message: 'از حساب کاربری خود خارج شدید'
+    })
+}

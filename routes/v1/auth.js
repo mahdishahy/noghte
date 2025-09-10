@@ -9,5 +9,6 @@ router.post("/register", controller.register);
 router.post("/login", controller.login);
 router.post("/refresh-token", controller.refreshToken);
 router.get('/profile', authMiddleware, controller.getMe)
+router.post('/logout', authMiddleware, controller.logout)
 
 module.exports = router
