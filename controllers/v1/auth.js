@@ -87,9 +87,6 @@ exports.login = async (req, res, next) => {
     //     return next(new AppError('ایمیل و رمز عبور صحیح نمیباشد'))
     // }
 
-    // convert user into object and remove password key
-    const userObject = passwordUtils.removeOnePropertyInObject(user, 'password');
-
     // generate access token
     const { accessToken, refreshToken } = generateTokens(user)
 
@@ -97,7 +94,7 @@ exports.login = async (req, res, next) => {
     user.refresh_token = refreshToken
     await user.save()
 
-    return res.status(200).json({ user: userObject, accessToken });
+    return res.status(200).json({ accessToken, refreshToken });
 };
 
 exports.refreshToken = async (req, res, next) => {
@@ -132,3 +129,9 @@ exports.refreshToken = async (req, res, next) => {
         refreshToken: newRefreshToken
     });
 };
+
+exports.getMe = async (req, res, next) => {
+    const { password, ...userWithOutPassword } = req.user
+
+    return res.json(userWithOutPassword)
+}
