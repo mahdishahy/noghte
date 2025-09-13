@@ -1,1 +1,10 @@
 node_modules/
+.idea
+logs
+_logs
+access.log
+combined._log
+error.log
+unhandleRejections.log
+
+.env
