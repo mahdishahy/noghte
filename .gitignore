@@ -1,8 +1,10 @@
 node_modules/
 .idea
+logs
 _logs
-test.http
 access.log
 combined._log
 error.log
 unhandleRejections.log
+
+.env
