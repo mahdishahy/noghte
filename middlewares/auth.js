@@ -11,12 +11,16 @@ module.exports = async (req, res, next) => {
     try {
         const decodedUserData = verifyAccessToken(token)
         if ( decodedUserData === null ) {
-            return res.status(403).json({ message: "توکن نامعتبر یا منقضی شده" })
+            return res.status(403).json({
+                success: false,
+                title: 'token-expired',
+                message: "توکن نامعتبر یا منقضی شده"
+            })
         }
 
         const user = await userModel.findById(decodedUserData.userId).lean()
         if ( !user ) {
-            return res.status(404).json({ message: "ابتدا وارد شوید ." })
+            return res.status(404).json({ message: "ابتدا وارد شوید" })
         }
         req.user = user
         next()
