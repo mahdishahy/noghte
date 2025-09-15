@@ -4,12 +4,12 @@ exports.generateTokens = (user) => {
     const accessToken = jwt.sign({
         userId: user._id,
         email: user.email
-    }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME + 'm' })
+    }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME })
 
     const refreshToken = jwt.sign({
         userId: user._id,
         email: user.email
-    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME + 'd' })
+    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME })
 
     return { accessToken, refreshToken }
 }
