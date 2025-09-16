@@ -137,6 +137,8 @@ exports.getMe = async (req, res, next) => {
         .populate('follower', 'username')
         .populate('followed', 'username')
         .populate('favorites', 'title')
+        .select('-password')
+        .lean()
 
     return res.json(user)
 }
