@@ -131,9 +131,16 @@ exports.refreshToken = async (req, res, next) => {
 };
 
 exports.getMe = async (req, res, next) => {
-    const { password, ...userWithOutPassword } = req.user
+    const id = req.user._id
 
-    return res.json(userWithOutPassword)
+    const user = await userModel.findById(id)
+        .populate('follower', 'username')
+        .populate('followed', 'username')
+        .populate('favorites', 'title')
+        .select('-password')
+        .lean()
+
+    return res.json(user)
 }
 
 exports.logout = async (req, res, next) => {
